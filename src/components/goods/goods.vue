@@ -32,11 +32,21 @@
                   <span class="now">¥{{food.price}}</span>
                   <span class="old" v-show="food.oldPrice">¥{{food.oldPrice}}</span>
                 </div>
+                <div class="cart-control-wrapper">
+                  <cart-control @add="onAdd" :food="food"></cart-control>
+                </div>
               </div>
             </li>
           </ul>
         </cube-scroll-nav-panel>
       </cube-scroll-nav>
+    </div>
+    <div class="shop-cart-wrapper">
+      <shop-cart
+        ref="shopCart"
+        :select-foods="selectFoods"
+        :delivery-price="seller.deliveryPrice"
+        :min-price="seller.minPrice"></shop-cart>
     </div>
   </div>
 </template>
@@ -44,6 +54,9 @@
 <script>
 
   import { getGoods } from 'api'
+  import CartControl from 'components/cart-control/cart-control'
+  import ShopCart from 'components/shop-cart/shop-cart'
+  import Bubble from 'components/bubble/bubble'
 
   export default {
     name: 'goods',
@@ -64,12 +77,36 @@
         }
       }
     },
+    computed: {
+      seller() {
+        return this.data.seller
+      },
+      selectFoods() {
+        let foods = []
+        this.goods.forEach((good) => {
+          good.foods.forEach((food) => {
+            if (food.count) {
+              foods.push(food)
+            }
+          })
+        })
+        return foods
+      }
+    },
     methods: {
       fetch() {
         getGoods().then((goods) => {
           this.goods = goods
         })
+      },
+      onAdd(target) {
+        this.$refs.shopCart.drop(target)
       }
+    },
+    components: {
+      CartControl,
+      ShopCart,
+      Bubble
     }
   }
 </script>
@@ -163,4 +200,15 @@
             text-decoration: line-through
             font-size: $fontsize-small-s
             color: $color-light-grey
+      .cart-control-wrapper
+        position: absolute
+        right: 0
+        bottom: 12px
+    .shop-cart-wrapper
+      position: absolute
+      left: 0
+      bottom: 0
+      z-index: 50
+      width: 100%
+      height: 48px
 </style>
